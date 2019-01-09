@@ -1,3 +1,7 @@
+package DAO;
+
+import Model.Cell;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
