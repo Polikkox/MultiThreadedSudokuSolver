@@ -1,14 +1,14 @@
-import Model.Sudoku;
+import Solver.SudokuManager;
 
 public class Main {
     public static void main(String[] args) {
 
-        long startTime = System.nanoTime();
+        long startTime = System.currentTimeMillis();
 
-        Sudoku sudoku = new Sudoku();
-        sudoku.run();
+        SudokuManager s = new SudokuManager();
+        s.findSolution();
 
-        long estimatedTime = System.nanoTime() - startTime;
-        System.out.println(estimatedTime /  1000000000.0 + " seconds");
+        long estimatedTime = System.currentTimeMillis() - startTime;
+        System.out.println(estimatedTime + " miliseconds");
     }
 }

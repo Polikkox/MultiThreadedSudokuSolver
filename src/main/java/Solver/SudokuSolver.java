@@ -1,5 +1,4 @@
 package Solver;
-
 import Model.Cell;
 
 import java.util.ArrayList;
@@ -9,15 +8,23 @@ public class SudokuSolver   {
     private Cell[][] cells;
     private static final int SIZE = 9;
     private static final int EMPTY = 0;
-    static int counter = 0;
 
-    public SudokuSolver(Cell[][] cells, Cell cell, int value) {
-        this.cells = cells;
-        setNewBoard(this.cells, cell, value);
-        //        new Thread(this).start();
+    private SudokuSolver(Cell[][] cells, Cell cell, int value) {
+        deepCopy(cells);
+        setNewBoard(cell, value);
     }
 
-    public SudokuSolver(Cell[][] cells){
+    private void deepCopy(Cell[][] cells){
+        Cell[][] celltemp = new Cell[9][9];
+        for(int row = 0; row < SIZE; row++) {
+            for (int col = 0; col < SIZE; col++) {
+                celltemp[row][col] = new Cell(cells[row][col].getRow(), cells[row][col].getCol(), cells[row][col].getValue());
+            }
+        }
+        this.cells = celltemp;
+    }
+
+    SudokuSolver(Cell[][] cells){
         this.cells = cells;
     }
 
@@ -26,74 +33,45 @@ public class SudokuSolver   {
 //        solve();
 //    }
 
-    private boolean isNewValueInCells(){
+    boolean trySolve(){
 
-        for(int row = 0; row < SIZE; row++) {
-            for (int col = 0; col < SIZE; col++) {
+            for(int row = 0; row < SIZE; row++) {
+                for (int col = 0; col < SIZE; col++) {
 
-                if (cells[row][col].getValue() == EMPTY) {
-                    cells[row][col].getPossibilities().clear();
-                    for (int number = 1; number <= SIZE; number++) {
-                        if (checkConstrains(row, col, number)) {
-                            cells[row][col].addPossibility(number);
+                    if (cells[row][col].getValue() == EMPTY) {
+                        cells[row][col].getPossibilities().clear();
+                        for (int number = 1; number <= SIZE; number++) {
+                            if (checkConstrains(row, col, number)) {
+                                cells[row][col].addPossibility(number);
+                            }
+                        }
+                        if(cells[row][col].hasOnePossibility()){
+                            cells[row][col].setValue(cells[row][col].returnResult());
+                            return true;
                         }
                     }
-                    if(cells[row][col].hasOnePossibility()){
-                        cells[row][col].setValue(cells[row][col].returnResult());
-                        return true;
-                    }
-                }
             }
         }
         return false;
     }
 
-    public void solve(){
-
-        while(isNewValueInCells()){
-        }
-        if(isSudokuSolved()){
-            System.out.println("Sudoku solved");
-        }else {
-            Cell cellMin = getCellWithMinPossibilities();
-            if(cellMin.getPossibilities().size() == 0){
-                System.out.println("Sudoku cannot be solved");
-            }
-            else{
-                System.out.println("watkowanie");
-                List<SudokuSolver> ssList = setSudokuSolverList(cellMin);
-                System.out.println("wielkosc listy dla solva: " + ssList.size());
-                solveSSList(ssList);
-            }
-        }
-        System.out.println("counter: " + counter);
-    }
-
-    private void solveSSList(List<SudokuSolver> ss){
-        for(SudokuSolver s: ss){
-            s.solve();
-        }
-    }
-    private List<SudokuSolver> setSudokuSolverList(Cell cell){
-        List<SudokuSolver> ssList = new ArrayList<>();
+    List<SudokuSolver> getNewSudokuSolvers(Cell cell){
+        List<SudokuSolver> newSudokuSolvers = new ArrayList<>();
         SudokuSolver newSS;
         for (int val: cell.getPossibilities()) {
-            counter++;
-            newSS = new SudokuSolver(cells, cell, val);
-//            newSS.display();
-            System.out.println("row: " + (cell.getRow()+1) + " col: " + (cell.getCol()+1) + " wpisalem tutaj: " + val);
-            ssList.add(newSS);
+            newSS = new SudokuSolver(this.cells, cell, val);
+            newSudokuSolvers.add(newSS);
         }
-        System.out.println("End map\n\n\n");
-        return ssList;
+        return newSudokuSolvers;
     }
 
-    private void setNewBoard(Cell[][] cells, Cell cell, int val){
-        cells[cell.getRow()][cell.getCol()].setValue(val);
+    private void setNewBoard(Cell cell, int val){
+        this.cells[cell.getRow()] [cell.getCol()].setValue(val);
+
     }
 
 
-    private Cell getCellWithMinPossibilities() {
+    Cell getCellWithMinPossibilities() {
         Cell cell = null;
         int minPossibilities = 9;
         for (int row = 0; row < SIZE; row++) {
@@ -107,11 +85,10 @@ public class SudokuSolver   {
 
             }
         }
-//        System.out.println(cell.getPossibilities().size());
         return cell;
     }
 
-    public boolean isSudokuSolved() {
+    boolean isSudokuSolved() {
         for (int row = 0; row < SIZE; row++) {
             for (int col = 0; col < SIZE; col++) {
                 if(cells[row][col].getValue() == EMPTY){
@@ -163,7 +140,7 @@ public class SudokuSolver   {
         return false;
     }
 
-    public void display() {
+    void display() {
         int rowCounter = 0;
         int colCounter = 0;
         System.out.println("\n-------------------------");
@@ -186,5 +163,4 @@ public class SudokuSolver   {
             System.out.println();
         }
     }
-
 }

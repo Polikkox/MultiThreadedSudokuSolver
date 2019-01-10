@@ -3,7 +3,6 @@ package DAO;
 import Model.Cell;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
@@ -27,8 +26,6 @@ public class CSVReader {
                 }
                 index++;
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {

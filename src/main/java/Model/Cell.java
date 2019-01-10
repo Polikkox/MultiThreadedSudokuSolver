@@ -32,25 +32,12 @@ public class Cell {
         return this.possibilities.get(0);
     }
 
-    public boolean equals(Cell cell){
-        return this.row == cell.getRow() && this.col == cell.getCol();
-    }
-
-
     public int getCol() {
         return col;
     }
 
-    public void setCol(int col) {
-        this.col = col;
-    }
-
     public int getRow() {
         return row;
-    }
-
-    public void setRow(int row) {
-        this.row = row;
     }
 
     public int getValue() {
