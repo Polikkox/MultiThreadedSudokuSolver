@@ -2,14 +2,23 @@ package Solver;
 
 import Model.Cell;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SudokuSolver   {
     private Cell[][] cells;
     private static final int SIZE = 9;
     private static final int EMPTY = 0;
+    static int counter = 0;
+
+    public SudokuSolver(Cell[][] cells, Cell cell, int value) {
+        this.cells = cells;
+        setNewBoard(this.cells, cell, value);
+        //        new Thread(this).start();
+    }
 
     public SudokuSolver(Cell[][] cells){
         this.cells = cells;
-//        new Thread(this).start();
     }
 
 //    @Override
@@ -17,7 +26,7 @@ public class SudokuSolver   {
 //        solve();
 //    }
 
-    public boolean isNewValueInCells(){
+    private boolean isNewValueInCells(){
 
         for(int row = 0; row < SIZE; row++) {
             for (int col = 0; col < SIZE; col++) {
@@ -39,24 +48,79 @@ public class SudokuSolver   {
         return false;
     }
 
-    public boolean solve(){
-        boolean isAnyChanceForNewValue = true;
+    public void solve(){
 
-        while(isAnyChanceForNewValue){
-            isAnyChanceForNewValue = isNewValueInCells();
+        while(isNewValueInCells()){
         }
-
-
-        return false;
+        if(isSudokuSolved()){
+            System.out.println("Sudoku solved");
+        }else {
+            Cell cellMin = getCellWithMinPossibilities();
+            if(cellMin.getPossibilities().size() == 0){
+                System.out.println("Sudoku cannot be solved");
+            }
+            else{
+                System.out.println("watkowanie");
+                List<SudokuSolver> ssList = setSudokuSolverList(cellMin);
+                System.out.println("wielkosc listy dla solva: " + ssList.size());
+                solveSSList(ssList);
+            }
+        }
+        System.out.println("counter: " + counter);
     }
 
-    public void checkBoard() {
+    private void solveSSList(List<SudokuSolver> ss){
+        for(SudokuSolver s: ss){
+            s.solve();
+        }
+    }
+    private List<SudokuSolver> setSudokuSolverList(Cell cell){
+        List<SudokuSolver> ssList = new ArrayList<>();
+        SudokuSolver newSS;
+        for (int val: cell.getPossibilities()) {
+            counter++;
+            newSS = new SudokuSolver(cells, cell, val);
+//            newSS.display();
+            System.out.println("row: " + (cell.getRow()+1) + " col: " + (cell.getCol()+1) + " wpisalem tutaj: " + val);
+            ssList.add(newSS);
+        }
+        System.out.println("End map\n\n\n");
+        return ssList;
+    }
+
+    private void setNewBoard(Cell[][] cells, Cell cell, int val){
+        cells[cell.getRow()][cell.getCol()].setValue(val);
+    }
+
+
+    private Cell getCellWithMinPossibilities() {
+        Cell cell = null;
+        int minPossibilities = 9;
         for (int row = 0; row < SIZE; row++) {
             for (int col = 0; col < SIZE; col++) {
+                if(cells[row][col].getValue() == EMPTY){
+                    if(cells[row][col].getPossibilities().size() < minPossibilities){
+                        cell = cells[row][col];
+                        minPossibilities = cell.getPossibilities().size();
+                    }
+                }
 
+            }
+        }
+//        System.out.println(cell.getPossibilities().size());
+        return cell;
+    }
+
+    public boolean isSudokuSolved() {
+        for (int row = 0; row < SIZE; row++) {
+            for (int col = 0; col < SIZE; col++) {
+                if(cells[row][col].getValue() == EMPTY){
+                    return false;
+                }
             }
 
         }
+        return true;
     }
 
 
@@ -122,4 +186,5 @@ public class SudokuSolver   {
             System.out.println();
         }
     }
+
 }

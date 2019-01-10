@@ -32,6 +32,10 @@ public class Cell {
         return this.possibilities.get(0);
     }
 
+    public boolean equals(Cell cell){
+        return this.row == cell.getRow() && this.col == cell.getCol();
+    }
+
 
     public int getCol() {
         return col;
