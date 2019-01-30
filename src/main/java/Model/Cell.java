@@ -10,9 +10,16 @@ public class Cell {
     private List<Integer> possibilities;
 
     public Cell(int row, int col, int value) {
-        this.col = col;
         this.row = row;
+        this.col = col;
         this.value = value;
+        this.possibilities = new ArrayList<>();
+    }
+
+    Cell(Cell cell) {
+        this.col = cell.getCol();
+        this.row = cell.getRow();
+        this.value = cell.getValue();
         this.possibilities = new ArrayList<>();
     }
 

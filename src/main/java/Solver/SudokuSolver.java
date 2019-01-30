@@ -1,57 +1,63 @@
 package Solver;
 import Model.Cell;
+import Model.Sudoku;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SudokuSolver   {
-    private Cell[][] cells;
-    private static final int SIZE = 9;
-    private static final int EMPTY = 0;
+public class SudokuSolver implements Runnable  {
+    private static final int BOARD_SIZE = 9;
+    private static final int NO_VALUE = 0;
+    private Sudoku sudoku;
 
-    private SudokuSolver(Cell[][] cells, Cell cell, int value) {
-        deepCopy(cells);
-        setNewBoard(cell, value);
+    public SudokuSolver(Sudoku sudoku){
+        this.sudoku = sudoku;
+        new Thread(this).start();
     }
 
-    private void deepCopy(Cell[][] cells){
-        Cell[][] celltemp = new Cell[9][9];
-        for(int row = 0; row < SIZE; row++) {
-            for (int col = 0; col < SIZE; col++) {
-                celltemp[row][col] = new Cell(cells[row][col].getRow(), cells[row][col].getCol(), cells[row][col].getValue());
-            }
+    private SudokuSolver(Sudoku oldSudoku, Cell cell, int value) {
+        this.sudoku = new Sudoku();
+        this.sudoku.copyCellList(oldSudoku.getCellList());
+        changeOneCell(cell, value);
+        new Thread(this).start();
+    }
+
+    Sudoku getSudoku() {
+        return sudoku;
+    }
+
+    @Override
+    public void run() {
+        while(isNotSolved()) {
+            
         }
-        this.cells = celltemp;
     }
 
-    SudokuSolver(Cell[][] cells){
-        this.cells = cells;
-    }
+    private boolean isNotSolved() {
+        boolean isSolved = false;
+        if(isSudokuSolved()){
+            isSolved = true;
+        }
+        return isSolved;
 
-//    @Override
-//    public void run() {
-//        solve();
-//    }
+    }
 
     boolean trySolve(){
-
-            for(int row = 0; row < SIZE; row++) {
-                for (int col = 0; col < SIZE; col++) {
-
-                    if (cells[row][col].getValue() == EMPTY) {
-                        cells[row][col].getPossibilities().clear();
-                        for (int number = 1; number <= SIZE; number++) {
-                            if (checkConstrains(row, col, number)) {
-                                cells[row][col].addPossibility(number);
-                            }
-                        }
-                        if(cells[row][col].hasOnePossibility()){
-                            cells[row][col].setValue(cells[row][col].returnResult());
-                            return true;
+        List<Cell> cellList = sudoku.getCellList();
+            for(Cell c: cellList) {
+                if (c.getValue() == NO_VALUE) {
+                    c.getPossibilities().clear();
+                    for (int number = 1; number <= BOARD_SIZE; number++) {
+                        if (checkConstrains(c.getRow(), c.getCol(), number)) {
+                            c.addPossibility(number);
                         }
                     }
+                    if(c.hasOnePossibility()){
+                        c.setValue(c.returnResult());
+                        return true;
+                    }
+                }
             }
-        }
         return false;
     }
 
@@ -59,47 +65,34 @@ public class SudokuSolver   {
         List<SudokuSolver> newSudokuSolvers = new ArrayList<>();
         SudokuSolver newSS;
         for (int val: cell.getPossibilities()) {
-            newSS = new SudokuSolver(this.cells, cell, val);
+            newSS = new SudokuSolver(this.sudoku, cell, val);
             newSudokuSolvers.add(newSS);
         }
         return newSudokuSolvers;
     }
 
-    private void setNewBoard(Cell cell, int val){
-        this.cells[cell.getRow()] [cell.getCol()].setValue(val);
-
+    private void changeOneCell(Cell cell, int newValue){
+        this.sudoku.changeValueOfCell(cell, newValue);
     }
-
-
     Cell getCellWithMinPossibilities() {
         Cell cell = null;
+        List<Cell> cellList = sudoku.getCellList();
+
         int minPossibilities = 9;
-        for (int row = 0; row < SIZE; row++) {
-            for (int col = 0; col < SIZE; col++) {
-                if(cells[row][col].getValue() == EMPTY){
-                    if(cells[row][col].getPossibilities().size() < minPossibilities){
-                        cell = cells[row][col];
+        for (Cell c : cellList) {
+                if(c.getValue() == NO_VALUE){
+                    if(c.getPossibilities().size() < minPossibilities){
+                        cell = c;
                         minPossibilities = cell.getPossibilities().size();
                     }
                 }
-
-            }
         }
         return cell;
     }
 
     boolean isSudokuSolved() {
-        for (int row = 0; row < SIZE; row++) {
-            for (int col = 0; col < SIZE; col++) {
-                if(cells[row][col].getValue() == EMPTY){
-                    return false;
-                }
-            }
-
-        }
-        return true;
+        return sudoku.getCellList().stream().noneMatch(c -> c.getValue() == NO_VALUE);
     }
-
 
     private boolean checkConstrains(int row, int col, int number) {
         return !isNumberInRow(row, number) && !isNumberInColumn(col, number) && !isNumberInSquare(row, col, number);
@@ -107,60 +100,23 @@ public class SudokuSolver   {
     }
 
     private boolean isNumberInSquare(int row, int col, int number) {
-        int r = row - row % 3;
-        int c = col - col % 3;
-
-
-        for(int i = r; i < r + 3; i++){
-            for(int j = c; j < c + 3; j++){
-                if(cells[i][j].getValue() == number){
-                    return true;
-                }
-            }
-        }
-        return false;
+        int startRow = row - row % 3;
+        int startColumn = col - col % 3;
+        return sudoku.getCellList().stream().
+                filter(c -> c.getRow() == startRow || c.getRow() == startRow + 1 || c.getRow() == startRow + 2).
+                filter(c -> c.getCol() == startColumn || c.getCol() == startColumn + 1 || c.getCol() == startColumn + 2).
+                anyMatch(c -> c.getValue() == number);
     }
 
     private boolean isNumberInColumn(int col, int number) {
-        for(int i = 0; i < SIZE; i++){
-            if(cells[i][col].getValue() == number){
-                return true;
-            }
-        }
-        return false;
+        return sudoku.getCellList().stream().
+                filter(c ->c.getCol() == col).
+                anyMatch(c -> c.getValue() == number);
     }
 
-    private boolean isNumberInRow(int row, int number){
-
-        for(int i = 0; i < SIZE; i++){
-            if(cells[row][i].getValue() == number){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    void display() {
-        int rowCounter = 0;
-        int colCounter = 0;
-        System.out.println("\n-------------------------");
-        for(int row = 0; row < SIZE; row++){
-            System.out.print("| ");
-            for(int col = 0; col < SIZE; col++){
-                System.out.print(cells[row][col].getValue() + " ");
-                if(rowCounter == 2){
-                    System.out.print("| ");
-                    rowCounter = -1;
-                }
-                rowCounter++;
-
-            }
-            if(colCounter == 2){
-                System.out.println("\n-------------------------");
-                colCounter = -1;
-            }
-            colCounter++;
-            System.out.println();
-        }
+    private boolean isNumberInRow(int row, int number) {
+        return sudoku.getCellList().stream().
+                filter(c -> c.getRow() == row).
+                anyMatch(c -> c.getValue() == number);
     }
 }

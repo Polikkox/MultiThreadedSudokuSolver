@@ -10,7 +10,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="MultiThreadedSudokuSolver" target="7" />
+      <module name="MultiThreadedSudokuSolver" target="8" />
     </bytecodeTargetLevel>
   </component>
 </project>
